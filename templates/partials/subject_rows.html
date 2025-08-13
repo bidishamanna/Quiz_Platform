@@ -1,0 +1,45 @@
+{% for subject in subjects %}
+<tr id="subject-row-{{ subject.id }}">
+    <td>{{ subject.name }}</td>
+    <td>{{ subject.category.name }}</td>
+
+    {% if user_role == 'staff' and subject.user == user %}
+        <td>{{ subject.requires_payment|yesno:"Yes,No" }}</td>
+        <td>
+            {% if subject.requires_payment %}
+                {% if subject.price is not None %}
+                    ₹{{ subject.price|floatformat:2 }}
+                {% else %}
+                    <span class="text-danger">No price set</span>
+                {% endif %}
+            {% else %}
+                <span class="text-muted">Free</span>
+            {% endif %}
+        </td>
+        <td>
+            <button class="btn btn-sm btn-info edit-subject"
+                data-id="{{ subject.id }}"
+                data-name="{{ subject.name }}"
+                data-category="{{ subject.category.id }}"
+                data-requires-payment="{{ subject.requires_payment|yesno:'true,false' }}"
+                data-price="{{ subject.price }}">Edit</button>
+        </td>
+        <td>
+            <button type="button"
+                    class="btn btn-danger btn-sm delete-subject"
+                    data-id="{{ subject.id }}">
+                Delete
+            </button>
+        </td>
+    {% else %}
+        <td class="text-muted">N/A</td>
+        <td class="text-muted">N/A</td>
+        <td class="text-muted">N/A</td>
+        <td class="text-muted">N/A</td>
+    {% endif %}
+</tr>
+{% empty %}
+<tr>
+    <td colspan="6" class="text-center text-muted">No subjects available.</td>
+</tr>
+{% endfor %}

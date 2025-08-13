@@ -1,0 +1,58 @@
+{% extends 'base.html' %}
+
+{% block content %}
+{% include 'includes/navbar.html' %}
+<div class="container mt-5">
+    <div class="card shadow">
+        <div class="card-header bg-primary text-white">
+            <h2 class="mb-0">Login</h2>
+        </div>
+        <div class="card-body">
+            <!-- Activation or Token Messages -->
+            {% if request.GET.activated %}
+                <div class="alert alert-success">Your account has been activated. Please log in.</div>
+            {% elif request.GET.invalid_token %}
+                <div class="alert alert-danger">Invalid or expired activation link.</div>
+            {% endif %}
+            
+            <form id="login_form" method="post">
+                {% csrf_token %}
+                <div class="mb-3">
+                    <label for="email" class="form-label">Email</label>
+                    <input type="email" name="email" id="email" class="form-control" required>
+                </div>
+                <div class="mb-3">
+                    <label for="password" class="form-label">Password</label>
+                    <input type="password" name="password" id="password" class="form-control" required>
+                </div>
+                <button type="button" class="btn btn-primary w-100" id="login-btn">Login</button>
+
+            </form>
+            <a href = "{% url 'forget_password' %}">Forget Password</a>
+
+            <div id="error_message" class="text-danger mt-3" style="display: none;"></div>
+        </div>
+    </div>
+</div>
+{% comment %} reset msg show {% endcomment %}
+{% if messages %}
+    {% for message in messages %}
+        <div class="alert alert-success text-center py-2" 
+             style="font-size: 1.5rem; max-width: 500px; margin: 10px auto;" 
+             id="flash-message">
+            {{ message }}
+        </div>
+    {% endfor %}
+{% endif %}
+
+<script>
+setTimeout(function(){
+    let msg = document.getElementById("flash-message");
+    if (msg) {
+        msg.style.display = "none";
+    }
+}, 3000); // 5 seconds
+</script>
+
+
+{% endblock %}

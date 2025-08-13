@@ -1,0 +1,93 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Register{% endblock %}
+
+{% block content %}
+{% include 'includes/navbar.html' %}
+
+<div class="container mt-5">
+  <h3 class="text-center text-primary">Student Registration</h3>
+
+  <form method="post" id="signupForm" novalidate>
+    {% csrf_token %}
+
+    <div class="form-group mb-3">
+      <label for="first_name">First Name:</label>
+      <input type="text" class="form-control" id="first_name" name="first_name" required>
+      <div class="text-danger" id="first_name_error"></div>
+    </div>
+
+    <div class="form-group mb-3">
+      <label for="last_name">Last Name:</label>
+      <input type="text" class="form-control" id="last_name" name="last_name" required>
+      <div class="text-danger" id="last_name_error"></div>
+    </div>
+
+    <div class="form-group mb-3">
+      <label for="username">Username:</label>
+      <input type="text" class="form-control" id="username" name="username" required>
+      <div class="text-danger" id="username_error"></div>
+    </div>
+
+    <div class="form-group mb-3">
+      <label for="email">Email:</label>
+      <input type="email" class="form-control" id="email" name="email" required>
+      <div class="text-danger" id="email_error"></div>
+    </div>
+
+    <div class="form-group mb-3">
+      <label for="password">Password:</label>
+      <input type="password" class="form-control" id="password" name="password" required>
+      <div class="text-danger" id="password_error"></div>
+    </div>
+
+    <div class="form-group mb-3">
+      <label for="confirm_password">Confirm Password:</label>
+      <input type="password" class="form-control" id="confirm_password" name="confirm_password" required>
+      <div class="text-danger" id="confirm_password_error"></div>
+    </div>
+
+    <div class="form-group mb-3">
+      <label>Gender:</label><br>
+      <div class="form-check form-check-inline">
+        <input type="radio" class="form-check-input" name="gender" id="gender_male" value="Male">
+        <label for="gender_male" class="form-check-label">Male</label>
+      </div>
+      <div class="form-check form-check-inline">
+        <input type="radio" class="form-check-input" name="gender" id="gender_female" value="Female">
+        <label for="gender_female" class="form-check-label">Female</label>
+      </div>
+      <div class="form-check form-check-inline">
+        <input type="radio" class="form-check-input" name="gender" id="gender_other" value="Other">
+        <label for="gender_other" class="form-check-label">Other</label>
+      </div>
+      <div class="text-danger" id="gender_error"></div>
+    </div>
+
+    <div class="form-group mb-3">
+      <label for="dob">Date of Birth:</label>
+      <input type="date" class="form-control" id="dob" name="dob" required>
+      <div class="text-danger" id="dob_error"></div>
+    </div>
+
+    <!-- Hidden role (can be 'student' or 'staff') -->
+    <input type="hidden" name="role" id="role" value="student">
+
+    <!-- Acknowledgment -->
+    <div class="form-group mb-3" id="acknowledge"></div>
+
+    <!-- Register Button -->
+    <button type="submit" class="btn btn-success" id="signup_btn" disabled>Register</button>
+  </form>
+
+  <!-- Spinner Overlay -->
+  <div id="spinner-overlay" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(255,255,255,0.7); z-index:9999; text-align:center;">
+    <div class="spinner-border text-primary" role="status" style="position:relative; top:40%; width: 4rem; height: 4rem;">
+      <span class="visually-hidden">Loading...</span>
+    </div>
+    <p class="fw-semibold text-dark mt-3">Sending verification email...</p>
+  </div>
+</div>
+
+{% endblock %}

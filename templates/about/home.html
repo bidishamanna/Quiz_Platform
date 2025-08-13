@@ -1,0 +1,125 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Home – Quiz Platform{% endblock %}
+
+{% block content %}
+{% include 'includes/navbar.html' %}
+
+<!-- Bootstrap Alert (Hidden by Default) -->
+<div id="customAlert" class="alert alert-warning alert-dismissible fade show text-center d-none" role="alert" style="position: fixed; top: 20px; left: 50%; transform: translateX(-50%); width: auto; z-index: 1050;">
+  <span id="alertMessage"></span>
+  <button type="button" class="btn btn-sm btn-primary ms-3" onclick="hideAlert()">OK</button>
+  <button type="button" class="btn-close" onclick="hideAlert()" aria-label="Close"></button>
+</div>
+
+<!-- Hero Section -->
+<section class="hero py-5">
+  <div class="container text-center">
+    <h1 class="display-4 fw-bold mb-3">Test Your Skills with Fun Quizzes!</h1>
+    <p class="lead">Join our platform and challenge yourself with topic-based assessments.</p>
+  </div>
+</section>
+
+<!-- Categories and Subjects Section -->
+<section class="py-5 category-section">
+  <div class="container">
+    <div class="row justify-content-center mb-5">
+      <div class="col-lg-8 text-center">
+        <h2 class="fw-bold text-white">🎯 Explore Categories</h2>
+        <p class="text-light">Choose from a wide range of topics to sharpen your knowledge.</p>
+      </div>
+    </div>
+
+    <div class="row">
+      {% for category, subjects in category_subject_map.items %}
+        <div class="col-md-6 col-lg-4 mb-4">
+          <div class="card h-100 border-0 shadow category-card">
+            <div class="card-body text-center">
+              <h5 class="category-title">{{ category.name }}</h5>
+
+              <!-- Toggle Subject List -->
+              <button type="button"
+                      class="btn btn-primary mt-3"
+                      onclick="document.getElementById('subjects-{{ category.id }}').classList.toggle('d-none')">
+                View Subjects
+              </button>
+
+              <!-- Subject List -->
+              <ul class="list-group mt-3 d-none" id="subjects-{{ category.id }}">
+                {% for subject in subjects %}
+                  <li class="list-group-item d-flex justify-content-between align-items-center">
+                    <span>{{ subject.name }}</span>
+
+                    {% if subject.requires_payment %}
+                      {% if user.is_authenticated and subject.id in paid_subjects %}
+                        <form method="get" action="{% url 'start_test' %}" onsubmit="return storeSubjectId({{ subject.id }})">
+                          <button type="submit" class="btn btn-sm btn-success">Start</button>
+                        </form>
+                      {% else %}
+                        {% if user.is_authenticated %}
+                          <a href="{% url 'payment_page' slug=subject.slug %}" class="btn btn-sm btn-warning">
+                            Pay Now{% if subject.price %} ₹{{ subject.price }}{% endif %}
+                          </a>
+                        {% else %}
+                          <button type="button"
+                                  class="btn btn-sm btn-warning"
+                                  onclick="promptLoginForPayment()">
+                            Pay Now{% if subject.price %} ₹{{ subject.price }}{% endif %}
+                          </button>
+                        {% endif %}
+                      {% endif %}
+                    {% else %}
+                      <form method="get" action="{% url 'start_test' %}" onsubmit="return storeSubjectId({{ subject.id }})">
+                        <button type="submit" class="btn btn-sm btn-success">Start</button>
+                      </form>
+                    {% endif %}
+                  </li>
+                {% empty %}
+                  <li class="list-group-item text-muted">No subjects found.</li>
+                {% endfor %}
+              </ul>
+
+            </div>
+          </div>
+        </div>
+      {% empty %}
+        <div class="col-12 text-center">
+          <p class="text-light">No categories available at the moment. Please check back later.</p>
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<!-- Scripts -->
+<script>
+  const isLoggedIn = {{ user.is_authenticated|yesno:"true,false" }};
+
+  function showAlert(message) {
+    document.getElementById("alertMessage").innerText = message;
+    document.getElementById("customAlert").classList.remove("d-none");
+  }
+
+  function hideAlert() {
+    document.getElementById("customAlert").classList.add("d-none");
+  }
+
+  function storeSubjectId(subjectId) {
+    if (!isLoggedIn) {
+      showAlert("You have to login first.");
+      return false;
+    }
+    localStorage.setItem('selectedSubjectId', subjectId);
+    return true;
+  }
+
+  function promptLoginForPayment() {
+    showAlert("You have to login first.");
+    document.querySelector("#customAlert .btn-primary").onclick = function () {
+      window.location.href = "{% url 'login_view' %}";
+    };
+  }
+</script>
+
+{% endblock %}
