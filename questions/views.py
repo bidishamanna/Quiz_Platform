@@ -436,6 +436,63 @@ def question_list(request):
     })
 
 
+# @jwt_required
+# @role_required('staff')
+# @require_POST
+# def edit_question(request, pk):
+#     question = get_object_or_404(Question, id=pk, delflag=False)
+
+#     if question.user != request.user:
+#         return JsonResponse({"message": "Unauthorized. You can only edit your own question."}, status=403)
+
+#     data = request.POST
+#     question_text = data.get("question_text", "").strip()
+#     category_id = data.get("category")
+#     subject_id = data.get("subject")
+#     set_id = data.get("set")
+#     option_a = data.get("option_a", "").strip()
+#     option_b = data.get("option_b", "").strip()
+#     option_c = data.get("option_c", "").strip()
+#     option_d = data.get("option_d", "").strip()
+#     correct_option = data.get("correct_option", "").strip()
+
+#     if not all([question_text, category_id, subject_id, set_id, option_a, option_b, option_c, option_d, correct_option]):
+#         return JsonResponse({"message": "All fields are required."}, status=400)
+
+#     try:
+#         category = Category.objects.get(id=category_id, delflag=False)
+#         subject = Subject.objects.get(id=subject_id, category=category, delflag=False)
+#         set_obj = Set.objects.get(id=set_id, subject=subject, category=category, delflag=False)
+
+#         if set_obj.user != request.user:
+#             return JsonResponse({"message": "Unauthorized. You can only assign your own set."}, status=403)
+
+#         # Update fields
+#         question.question_text = question_text
+#         question.category = category
+#         question.subject = subject
+#         question.set = set_obj
+#         question.option_a = option_a
+#         question.option_b = option_b
+#         question.option_c = option_c
+#         question.option_d = option_d
+#         question.correct_option = correct_option
+#         question.save()
+
+#         # Return updated question list HTML
+#         questions = Question.objects.select_related("category", "subject", "set", "user").filter(
+#             user=request.user, delflag=False
+#         )
+#         html = render_to_string("partials/question_rows.html", {
+#             "questions": questions,
+#             "user_role": request.user.role,
+#             "user": request.user
+#         }, request=request)
+
+#         return JsonResponse({"message": "Question updated successfully!", "html": html})
+
+#     except (Category.DoesNotExist, Subject.DoesNotExist, Set.DoesNotExist):
+#         return JsonResponse({"message": "Invalid category, subject, or set."}, status=400)
 @jwt_required
 @role_required('staff')
 @require_POST
@@ -486,13 +543,15 @@ def edit_question(request, pk):
         html = render_to_string("partials/question_rows.html", {
             "questions": questions,
             "user_role": request.user.role,
-            "user": request.user
+            "user": request.user,
+            "show_edit_button": True  # ✅ THIS FIXES THE DISAPPEARING EDIT BUTTON
         }, request=request)
 
         return JsonResponse({"message": "Question updated successfully!", "html": html})
 
     except (Category.DoesNotExist, Subject.DoesNotExist, Set.DoesNotExist):
         return JsonResponse({"message": "Invalid category, subject, or set."}, status=400)
+
 
 from django.views.decorators.csrf import csrf_exempt
 
@@ -809,6 +868,15 @@ def assign_random_set(request):
 #         'C': next_q.option_c,
 #         'D': next_q.option_d,
 #     }
+def upload_questions_view(request):
+    context = {
+        'categories': Category.objects.all(),
+        'questions': Question.objects.all(),
+        'user_role': 'staff' if request.user.is_staff else 'user',
+        'user': request.user,
+        'show_edit_button': False,  # 👈 Hide edit button on this page
+    }
+    return render(request, 'upload.html', context)
 
 #     return JsonResponse({
 #         'status': 'success',
