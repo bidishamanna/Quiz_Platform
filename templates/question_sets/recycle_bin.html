@@ -3,6 +3,11 @@
 
 {% block content %}
 {% include 'includes/navbar.html' %}
+
+<form id="csrf-form" style="display:none;">
+    {% csrf_token %}
+</form>
+
 <div class="container mt-5">
     <h3 class="text-center text-danger mb-4">Recycle Bin (Deleted Sets)</h3>
 

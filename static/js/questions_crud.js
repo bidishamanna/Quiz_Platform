@@ -193,41 +193,27 @@ $(document).ready(function () {
         });
     });
     
-     // ✅ Function to get CSRF token from cookie
-    function getCookie(name) {
-    let cookieValue = null;
-    if (document.cookie && document.cookie !== "") {
-        const cookies = document.cookie.split(";");
-        for (let i = 0; i < cookies.length; i++) {
-            const cookie = cookies[i].trim();
-            if (cookie.substring(0, name.length + 1) === name + "=") {
-                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                break;
-            }
-        }
-    }
-    return cookieValue;
-    }
-
+        
     $(document).on("click", ".restore-question-btn", function () {
         const id = $(this).data("id");
-        const csrfToken = getCookie("csrftoken");
+
+        // ✅ Get CSRF token directly from hidden form input
+        const csrfToken = $("#csrf-form input[name=csrfmiddlewaretoken]").val();
 
         $.ajax({
             url: `/questions/restore/${id}/`,
             type: "POST",
-            beforeSend: function (xhr) {
-                xhr.setRequestHeader("X-CSRFToken", csrfToken);
-            },
+            headers: { "X-CSRFToken": csrfToken },  // attach CSRF header
             success: function (response) {
                 alert(response.message);
-                location.reload(); // Refresh the page to reflect restored data
+                location.reload(); // 🔄 refresh to show restored data
             },
             error: function (xhr) {
                 alert(xhr.responseJSON?.message || "Failed to restore question.");
             }
         });
     });
+
 
     
     // $("#upload-question-form").submit(function (e) {

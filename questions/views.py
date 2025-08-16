@@ -585,7 +585,8 @@ def delete_question(request, pk):
     html = render_to_string("partials/question_rows.html", {
         "questions": questions,
         "user_role": request.user.role,
-        "user": request.user
+        "user": request.user,
+        "show_edit_button": True, 
     }, request=request)
 
     return JsonResponse({"message": "Question deleted successfully!", "html": html})

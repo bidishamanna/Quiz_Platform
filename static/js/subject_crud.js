@@ -260,17 +260,18 @@ $(document).ready(function () {
         });
     });
 
+        // Restore Subject
     // Restore Subject
     $(document).on("click", ".restore-subject-btn", function () {
         const id = $(this).data("id");
-        const csrfToken = getCookie("csrftoken");
+
+        // ✅ grab csrf token from hidden input rendered by {% csrf_token %}
+        const csrfToken = $("#csrf-form input[name=csrfmiddlewaretoken]").val();
 
         $.ajax({
             url: `/subject/restore/${id}/`,
             type: "POST",
-            beforeSend: function (xhr) {
-                xhr.setRequestHeader("X-CSRFToken", csrfToken);
-            },
+            headers: { "X-CSRFToken": csrfToken },  // set CSRF header
             success: function (response) {
                 alert(response.message);
                 location.reload();
@@ -281,19 +282,20 @@ $(document).ready(function () {
         });
     });
 
-    // Helper to get CSRF token
-    function getCookie(name) {
-        let cookieValue = null;
-        if (document.cookie && document.cookie !== "") {
-            const cookies = document.cookie.split(";");
-            for (let i = 0; i < cookies.length; i++) {
-                const cookie = cookies[i].trim();
-                if (cookie.substring(0, name.length + 1) === name + "=") {
-                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                    break;
-                }
-            }
-        }
-        return cookieValue;
-    }
+
+    // // Helper to get CSRF token
+    // function getCookie(name) {
+    //     let cookieValue = null;
+    //     if (document.cookie && document.cookie !== "") {
+    //         const cookies = document.cookie.split(";");
+    //         for (let i = 0; i < cookies.length; i++) {
+    //             const cookie = cookies[i].trim();
+    //             if (cookie.substring(0, name.length + 1) === name + "=") {
+    //                 cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+    //                 break;
+    //             }
+    //         }
+    //     }
+    //     return cookieValue;
+    // }
 });
