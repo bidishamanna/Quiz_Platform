@@ -286,7 +286,9 @@ def add_question(request):
             "questions": questions,
             "user_role": request.user.role,
             "user": request.user,
+            "show_edit_button": True,  
         })
+    
     
     # POST request — Add Question logic
     data = request.POST
@@ -303,6 +305,14 @@ def add_question(request):
 
     if not all([question_text, category_id, subject_id, set_id, option_a, option_b, option_c, option_d, correct_option]):
         return JsonResponse({"message": "All fields are required."}, status=400)
+    
+    # ✅ Correct option validation
+    valid_options = ["a", "b", "c", "d"]
+    if correct_option not in valid_options:
+        return JsonResponse(
+            {"correct_option": "Correct option must be A, B, C, or D."}, 
+            status=400
+        )
 
     try:
         category = get_object_or_404(Category, id=category_id, delflag=False)
@@ -354,6 +364,7 @@ def add_question(request):
             "questions": questions,
             "user_role": request.user.role,
             "user": request.user,
+            "show_edit_button": True, 
         })
 
         return JsonResponse({"message": "Question added successfully!", "html": html})
@@ -903,7 +914,8 @@ def get_question(request):
     answered_qs = UserAnswer.objects.filter(attempt=attempt).values_list('question_id', flat=True)
     print("Answered questions:", list(answered_qs))
 
-    next_q = Question.objects.filter(set_id=set_id, delflag=False).exclude(id__in=answered_qs).first()
+    next_q = Question.objects.filter(set_id=set_id, delflag=False).exclude(id__in=answered_qs).order_by("?").first()
+
 
     if not next_q:
         print("All questions completed.")

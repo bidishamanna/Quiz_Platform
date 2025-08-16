@@ -80,9 +80,15 @@
         <!-- Correct Option -->
         <div class="form-group">
             <label>Correct Option</label>
-            <input type="text" name="correct_option" id="correct_option" class="form-control" placeholder="A / B / C / D" required>
+            <input type="text" name="correct_option" id="correct_option" 
+                class="form-control" 
+                placeholder="A / B / C / D" 
+                required
+                pattern="^[A-Da-d]$"
+                title="Only A, B, C, or D allowed">
             <div class="text-danger" id="error-correct_option"></div>
         </div>
+
 
         <button type="submit" id="add-question-btn" class="btn btn-primary">Add Question</button>
     </form>

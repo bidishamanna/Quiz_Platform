@@ -67,12 +67,11 @@
 //             });
 //         });
 //     });
-    
 function validateRegistrationForm() {
-    const firstName = $("#first_name").val()
-    const lastName = $("#last_name").val()
-    const username = $("#username").val()
-    const email = $("#email").val()
+    const firstName = $("#first_name").val();
+    const lastName = $("#last_name").val();
+    const username = $("#username").val();
+    const email = $("#email").val();
     const password = $("#password").val();
     const confirmPassword = $("#confirm_password").val();
     const dob = $("#dob").val();
@@ -90,6 +89,7 @@ function validateRegistrationForm() {
 
     const today = new Date();
 
+    // First Name validation
     if (!firstName) {
         $("#first_name_error").html("First name is required.");
         isValid = false;
@@ -98,6 +98,7 @@ function validateRegistrationForm() {
         isValid = false;
     }
 
+    // Last Name validation
     if (!lastName) {
         $("#last_name_error").html("Last name is required.");
         isValid = false;
@@ -106,6 +107,7 @@ function validateRegistrationForm() {
         isValid = false;
     }
 
+    // Username validation
     if (!username) {
         $("#username_error").html("Username is required.");
         isValid = false;
@@ -114,6 +116,7 @@ function validateRegistrationForm() {
         isValid = false;
     }
 
+    // Email validation
     if (!email) {
         $("#email_error").html("Email is required.");
         isValid = false;
@@ -122,14 +125,16 @@ function validateRegistrationForm() {
         isValid = false;
     }
 
+    // Password validation
     if (!password) {
         $("#password_error").html("Password is required.");
         isValid = false;
     } else if (!passwordRegex.test(password)) {
-        $("#password_error").html("Password must include uppercase, lowercase, number, and special char.");
+        $("#password_error").html("Password must be 8+ chars with uppercase, lowercase, number, and special char.");
         isValid = false;
     }
 
+    // Confirm Password validation
     if (!confirmPassword) {
         $("#confirm_password_error").html("Please confirm your password.");
         isValid = false;
@@ -138,11 +143,13 @@ function validateRegistrationForm() {
         isValid = false;
     }
 
+    // Gender validation
     if (!gender) {
         $("#gender_error").html("Please select a gender.");
         isValid = false;
     }
 
+    // DOB validation
     if (!dob) {
         $("#dob_error").html("Date of birth is required.");
         isValid = false;
@@ -152,10 +159,10 @@ function validateRegistrationForm() {
             $("#dob_error").html("DOB cannot be in the future.");
             isValid = false;
         } else {
-            const age = today.getFullYear() - dobDate.getFullYear();
+            let age = today.getFullYear() - dobDate.getFullYear();
             const m = today.getMonth() - dobDate.getMonth();
-            const actualAge = m > 0 || (m === 0 && today.getDate() >= dobDate.getDate()) ? age : age - 1;
-            if (actualAge < 10) {
+            if (m < 0 || (m === 0 && today.getDate() < dobDate.getDate())) age--;
+            if (age < 10) {
                 $("#dob_error").html("You must be at least 10 years old.");
                 isValid = false;
             }
@@ -165,7 +172,10 @@ function validateRegistrationForm() {
     $("#signup_btn").prop("disabled", !isValid);
     return isValid;
 }
+
+// Email uniqueness check
 function validateEmailUniqueness(email, callback) {
+    if (!email) return callback(false);
     $.ajax({
         url: "/account/check_email/",
         type: "POST",
@@ -176,7 +186,7 @@ function validateEmailUniqueness(email, callback) {
         success: function (res) {
             if (res.exists) {
                 $("#email_error").html("Email already taken.");
-                callback(false);
+                callback(false); //) tells the validator: this field is invalid, so the form should not submit yet.
             } else {
                 callback(true);
             }
@@ -188,25 +198,27 @@ function validateEmailUniqueness(email, callback) {
     });
 }
 
-
 $(document).ready(function () {
     console.log("✅ Registration script loaded");
 
+    $("#signup_btn").prop("disabled", true);
+
+    // Validate on input/change/blur
     $("input, select").on("input change blur", function () {
         validateRegistrationForm();
     });
 
     $("#signup_btn").click(function (e) {
         e.preventDefault();
-        $("#acknowledge").text("");
+        $("#acknowledge").html('');
 
         if (!validateRegistrationForm()) return;
 
         const formData = {
-            first_name: $("#first_name").val().trim(),
-            last_name: $("#last_name").val().trim(),
-            username: $("#username").val().trim(),
-            email: $("#email").val().trim(),
+            first_name: $("#first_name").val(),
+            last_name: $("#last_name").val(),
+            username: $("#username").val(),
+            email: $("#email").val(),
             password: $("#password").val(),
             confirm_password: $("#confirm_password").val(),
             gender: $("input[name='gender']:checked").val(),
@@ -226,19 +238,19 @@ $(document).ready(function () {
                     $("#spinner-overlay").show();
                 },
                 success: function (response) {
-                    $("#acknowledge").text(response.message).css("color", "green").fadeIn().delay(5000).fadeOut();
+                    $("#acknowledge").html(`<div class="alert alert-success">${response.message}</div>`).fadeIn().delay(5000).fadeOut();
                     setTimeout(() => {
                         window.location.href = response.redirect_url;
                     }, 7000);
                 },
                 error: function (xhr) {
                     const res = xhr.responseJSON;
-                    if (res.errors) {
+                    if (res && res.errors) {
                         for (const field in res.errors) {
                             $(`#${field}_error`).html(`<div class="text-danger">${res.errors[field]}</div>`);
                         }
                     } else {
-                        $("#acknowledge").html(`<div class="alert alert-danger">Something went wrong!</div>`);
+                        $("#acknowledge").html('<div class="alert alert-danger">Something went wrong!</div>');
                     }
                 },
                 complete: function () {
@@ -247,6 +259,10 @@ $(document).ready(function () {
             });
         });
     });
+
+
+
+
 
     
 
@@ -274,9 +290,9 @@ $(document).ready(function () {
                 password: password,
                 csrfmiddlewaretoken: csrfToken
             },
-            headers: {
-                "X-CSRFToken": csrfToken
-            },
+            // headers: {
+            //     "X-CSRFToken": csrfToken
+            // },
             success: function (response) {
                 if (response.status === "success") {
                     window.location.href = response.redirect_url;

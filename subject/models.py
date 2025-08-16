@@ -39,12 +39,14 @@ class Subject(models.Model):
         default=False,
         help_text="If true, user must pay to access tests under this subject"
     )
+    
     price = models.DecimalField(
         max_digits=7,
         decimal_places=2,
         default=0.00,
         help_text="Enter price for accessing the test. Used only if requires_payment=True"
     )
+    
     slug = models.SlugField(unique=True, blank=True, null=True, help_text="Auto-generated from subject name")
 
     class Meta:
@@ -63,4 +65,6 @@ class Subject(models.Model):
                 counter += 1
             self.slug = slug
         super().save(*args, **kwargs)
+
+
 

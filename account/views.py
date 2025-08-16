@@ -401,6 +401,7 @@ from django.http import JsonResponse, HttpResponseBadRequest
 from .models import User
 
 
+
 NAME_REGEX = r'^[A-Za-z]{2,30}$'
 USERNAME_REGEX = r'^[A-Za-z0-9_]{4,20}$'
 EMAIL_REGEX = r'^[\w\.-]+@[\w\.-]+\.\w+$'
@@ -467,7 +468,7 @@ def registration(request):
         if errors:
             return JsonResponse({'success': False, 'errors': errors}, status=400)
 
-        user = User.objects.create_user(
+        user = User.objects.create_user(      # for creating user use create_user ,, otherwise use create
             first_name=first_name,
             last_name=last_name,
             username=username,
@@ -555,7 +556,6 @@ def login_view(request):
             )
 
             return response
-
         except Exception as e:
             return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
 
@@ -684,12 +684,23 @@ from django.shortcuts import render
 from account.models import User
 from urllib.parse import quote, unquote
 from django.contrib import messages
+from django.http import JsonResponse
+from django.core.mail import send_mail
+from urllib.parse import quote
+from django.conf import settings
+
+from django.core.mail import send_mail
+from urllib.parse import quote
+from django.conf import settings
+from django.http import JsonResponse
+
+
 def forget_password(request): 
     if request.method == 'POST':
         email = request.POST.get("email")
         if User.objects.filter(email=email).exists():
             user = User.objects.get(email=email)
-            email_encoded = quote(email)  # Encode for URL
+            email_encoded = quote(email)
             reset_link = f"http://127.0.0.1:8000/account/newpassword/{email_encoded}/"
 
             send_mail(
@@ -699,11 +710,21 @@ def forget_password(request):
                 [email],
                 fail_silently=False
             )
-            messages.success(request, "✅ Reset link sent to your email.")
-            return redirect('login_view')
+            return JsonResponse({"success": True, "message": "Reset link sent to your email."})
 
-    return render(request,'account/email/forget_password.html')  
+        else:
+            return JsonResponse({"success": False, "message": "Email not found."})
+    
+    return render(request,'account/email/forget_password.html')
 
+
+
+PASSWORD_REGEX = r'^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$'
+
+from urllib.parse import unquote
+import re
+# from django.contrib.auth.models import User
+from django.shortcuts import render, redirect
 
 PASSWORD_REGEX = r'^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$'
 
@@ -726,6 +747,9 @@ def newpassword(request, email):
         else:
             user.set_password(pass1)
             user.save()
-            return HttpResponse('Password has been reset successfully.')
+            context['success'] = True
+            context['message'] = "Password has been reset successfully."
 
     return render(request, 'account/email/reset_password.html', context)
+
+

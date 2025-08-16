@@ -9,11 +9,7 @@ from account.decorators import role_required,jwt_required
 from django.views.decorators.http import require_POST
 from django.views.decorators.http import require_http_methods
 # # Create your views here.
-# @login_required
-# @role_required('staff')
-# def recycle_bin(request):
-#     deleted_categories = Category.objects.filter(delflag=True, user=request.user)
-#     return render(request, "category/recycle_bin.html", {"deleted_categories": deleted_categories})
+
 @login_required
 @role_required('staff')
 def recycle_bin(request):
@@ -25,19 +21,44 @@ def recycle_bin(request):
         "user": request.user  # ✅ explicitly pass user for template checks
     })
 
+from django.http import JsonResponse
+from django.shortcuts import get_object_or_404
+from django.contrib.auth.decorators import user_passes_test
+from django.views.decorators.http import require_POST
+
+# //////// if i want who create the category , after anyone restore but ownership will be go who create this caregory //////////////
+# @jwt_required
+# @role_required('staff')  # Ensures only staff can restore categories
+# @require_POST
+# def restore_category(request, pk):
+#     # Fetch the category which is soft-deleted
+#     category = get_object_or_404(Category, pk=pk, delflag=True)
+
+#     # If the user is staff, restore the category
+#     category.delflag = False
+#     category.save()
+
+#     return JsonResponse({"message": "Category restored successfully."})
+
+
+
+# ///////////  who restore the category ownership will assign to that staff///////
 @jwt_required
-@role_required('staff')
+@role_required('staff')  # Ensures only staff can restore categories
 @require_POST
 def restore_category(request, pk):
+    # Fetch the category which is soft-deleted
     category = get_object_or_404(Category, pk=pk, delflag=True)
 
-    if category.user != request.user:
-        return JsonResponse({"message": "You do not have permission to restore this category."}, status=403)
-
+    # Restore and transfer ownership to the user performing the action
     category.delflag = False
+    category.user = request.user
     category.save()
 
-    return JsonResponse({"message": "Category restored successfully."})
+    return JsonResponse({
+        "message": "Category restored successfully "
+    })
+
 
 @login_required
 @role_required('staff', 'student')
@@ -84,9 +105,9 @@ def add_category(request):
             Category.objects.create(name=category_name, user=request.user)
             messages.success(request, "Category created successfully!")
 
-        categories = Category.objects.filter(delflag=False)
-        data = [{"id": c.id, "name": c.name} for c in categories]
-        return JsonResponse({"message": "Category saved successfully!", "categories": data})
+        # categories = Category.objects.filter(delflag=False)
+        # data = [{"id": c.id, "name": c.name} for c in categories] #category instantly appear in table"
+        # return JsonResponse({"message": "Category saved successfully!", "categories": data})
 
     # GET request: render the form and category list
     categories = Category.objects.filter(delflag=False)
@@ -111,7 +132,7 @@ def edit_category(request, pk):
             return JsonResponse({"message": "No changes detected."}, status=200)
 
         # Check for existing active category with same name
-        if Category.objects.filter(name__iexact=new_name, delflag=False).exclude(id=pk).exists():
+        if Category.objects.filter(name__iexact=new_name, delflag=False).exclude(id=pk).exists():  # skip its own id and search all except own id
             return JsonResponse({"message": "Another active category with this name already exists."}, status=400)
 
         # Reactivate a previously deleted category

@@ -230,32 +230,32 @@ $(document).ready(function () {
     });
 
     
-    $("#upload-question-form").submit(function (e) {
-    e.preventDefault();
-    let formData = new FormData(this);
+    // $("#upload-question-form").submit(function (e) {
+    // e.preventDefault();
+    // let formData = new FormData(this);
 
-    $.ajax({
-        type: "POST",
-        url: uploadQuestionsUrl, // use variable, not {% url %}
-        data: formData,
-        processData: false,
-        contentType: false,
-        success: function (response) {
-            $("#acknowledge").text(response.message)
-                .css("color", "green").fadeIn().delay(2000).fadeOut();
-            $("#upload-question-form")[0].reset();
-            $("#question-rows").html(response.html);
-            $(".text-danger").empty();
-        },
-        error: function (xhr) {
-            const errors = xhr.responseJSON;
-            $(".text-danger").empty();
-            for (const field in errors) {
-                $(`#error-${field}`).html(errors[field]);
-            }
-        }
-    });
-    });
+    // $.ajax({
+    //     type: "POST",
+    //     url: uploadQuestionsUrl, // use variable, not {% url %}
+    //     data: formData,
+    //     processData: false,
+    //     contentType: false,
+    //     success: function (response) {
+    //         $("#acknowledge").text(response.message)
+    //             .css("color", "green").fadeIn().delay(2000).fadeOut();
+    //         $("#upload-question-form")[0].reset();
+    //         $("#question-rows").html(response.html);
+    //         $(".text-danger").empty();
+    //     },
+    //     error: function (xhr) {
+    //         const errors = xhr.responseJSON;
+    //         $(".text-danger").empty();
+    //         for (const field in errors) {
+    //             $(`#error-${field}`).html(errors[field]);
+    //         }
+    //     }
+    // });
+    // });
 
 
     

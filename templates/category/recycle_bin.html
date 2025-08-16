@@ -6,6 +6,11 @@
 <div class="container mt-5">
     <h3 class="text-center text-danger mb-4">Recycle Bin (All Deleted Categories)</h3>
 
+    <!-- Add hidden CSRF token for AJAX POSTs -->
+    <form style="display:none;">
+        {% csrf_token %}
+    </form>
+
     <table class="table table-bordered">
         <thead class="table-dark">
             <tr>
@@ -19,9 +24,8 @@
                 <tr>
                     <td>{{ category.name }}</td>
                     <td>{{ category.user.username }}</td>
-
                     <td>
-                        {% if category.user == user %}
+                        {% if request.user.role == 'staff' %}
                             <button class="btn btn-success btn-sm restore-btn" data-id="{{ category.id }}">
                                 Restore
                             </button>
@@ -39,5 +43,3 @@
     </table>
 </div>
 {% endblock %}
-
-

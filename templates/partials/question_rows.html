@@ -11,7 +11,7 @@
     <td>{{ question.option_d }}</td>
     <td>{{ question.correct_option }}</td>
 
-    {% if user_role == 'staff' and question.user == user %}
+    {% if user_role == 'staff' and question.user.id == user.id %}
         {% if show_edit_button %}
             <td>
                 <button type="button"

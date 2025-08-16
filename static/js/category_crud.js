@@ -89,38 +89,65 @@ $(document).ready(function () {
         });
     });
 
-    function getCookie(name) {
-        let cookieValue = null;
-        if (document.cookie && document.cookie !== "") {
-            const cookies = document.cookie.split(";");
-            for (let i = 0; i < cookies.length; i++) {
-                const cookie = cookies[i].trim();
-                if (cookie.substring(0, name.length + 1) === name + "=") {
-                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                    break;
-                }
-            }
-        }
-        return cookieValue;
-    }
+//     function getCookie(name) {
+//         let cookieValue = null;
+//         if (document.cookie && document.cookie !== "") {
+//             const cookies = document.cookie.split(";");
+//             for (let i = 0; i < cookies.length; i++) {
+//                 const cookie = cookies[i].trim();
+//                 if (cookie.substring(0, name.length + 1) === name + "=") {
+//                     cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+//                     break;
+//                 }
+//             }
+//         }
+//         return cookieValue;
+//     }
+
+//     $(document).on("click", ".restore-btn", function () {
+//         const id = $(this).data("id");
+//         const csrfToken = getCookie("csrftoken");
+
+//         $.ajax({
+//             url: `/category/restore/${id}/`,
+//             type: "POST",
+//             beforeSend: function (xhr) {
+//                 xhr.setRequestHeader("X-CSRFToken", csrfToken);
+//             },
+//             success: function (response) {
+//                 alert(response.message);
+//                 location.reload();
+//             },
+//             error: function (xhr) {
+//                 alert(xhr.responseJSON?.message || "Failed to restore category.");
+//             }
+//         });
+//     });
+// })    
 
     $(document).on("click", ".restore-btn", function () {
-        const id = $(this).data("id");
-        const csrfToken = getCookie("csrftoken");
+    const id = $(this).data("id");
+    const csrfToken = $("input[name=csrfmiddlewaretoken]").val();
 
-        $.ajax({
-            url: `/category/restore/${id}/`,
-            type: "POST",
-            beforeSend: function (xhr) {
-                xhr.setRequestHeader("X-CSRFToken", csrfToken);
-            },
-            success: function (response) {
+    if (!confirm("Are you sure you want to restore this category?")) return;
+
+    $.ajax({
+        url: `/category/restore/${id}/`,
+        method: "POST",
+        data: {
+            csrfmiddlewaretoken: csrfToken
+        },
+        success: function (response) {
                 alert(response.message);
                 location.reload();
             },
-            error: function (xhr) {
-                alert(xhr.responseJSON?.message || "Failed to restore category.");
-            }
-        });
+        
+        error: function () {
+            $("#acknowledge").text("Failed to restore the category.")
+                .css("color", "red")
+                .fadeIn().delay(2000).fadeOut();
+        }
     });
-})    
+});
+})
+

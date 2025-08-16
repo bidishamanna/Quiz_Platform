@@ -10,7 +10,7 @@ $(document).ready(function () {
         event.preventDefault();
 
         const set_id = $("#set_id").val();
-        const set_name = $("#set_name").val().trim();
+        const set_name = $("#set_name").val();
         const category_id = $("#category").val();
         const subject_id = $("#subject").val();
         const csrfToken = $("input[name=csrfmiddlewaretoken]").val();
