@@ -11,6 +11,7 @@
     <!-- Set Form -->
     <form method="post" id="setForm">
         {% csrf_token %}
+        <input type="hidden" id="set_id" name="set_id">
 
         <div class="form-group">
             <label for="category">Select Category:</label>

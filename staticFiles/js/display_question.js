@@ -347,9 +347,7 @@ $(document).ready(function () {
             url: '/questions/assign-random-set/',
             type: 'GET',
             data: { subject_id: subjectId },
-            headers: {
-                'Authorization': 'Bearer ' + token
-            },
+            
             success: function (data) {
                 if (data.status === 'success') {
                     currentSetId = data.set_id;
@@ -422,19 +420,18 @@ $(document).ready(function () {
     });
 
     function submitAnswer(selectedOption) {
-        const token = localStorage.getItem("access_token");
+         // ✅ grab CSRF token from hidden input rendered by {% csrf_token %}
+        const csrfToken = $("input[name=csrfmiddlewaretoken]").val();
 
         $.ajax({
             url: '/questions/submit-answer/',
             type: 'POST',
-            headers: {
-                'Authorization': 'Bearer ' + token,
-                'X-CSRFToken': getCSRFToken()
-            },
+            
             data: {
             question_id: currentQuestionId,
             selected_option: selectedOption || "",  // send as empty string if null
-            attempt_id: currentAttemptId
+            attempt_id: currentAttemptId,
+            csrfmiddlewaretoken: csrfToken  
             },
 
             success: function (data) {
@@ -451,6 +448,7 @@ $(document).ready(function () {
 
                 loadNextQuestion();
             },
+
             error: function (xhr) {
                 console.error("Submit error:", xhr.responseText || xhr.statusText);
                 alert("Could not submit answer.");
@@ -482,11 +480,7 @@ $(document).ready(function () {
         $('#quiz-area').html(html);
     }
 
-    function getCSRFToken() {
-        return document.cookie
-            .split('; ')
-            .find(row => row.startsWith('csrftoken'))
-            ?.split('=')[1];
-    }
+  
 });
+
 

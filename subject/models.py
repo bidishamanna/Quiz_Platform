@@ -34,7 +34,8 @@ class Subject(models.Model):
     name = models.CharField(max_length=100, help_text="Name of the subject (e.g., Mathematics, Physics)")
     category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name="subjects", help_text="Category associated with this subject")
     delflag = models.BooleanField(default=False)
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE
+                             )
     requires_payment = models.BooleanField(
         default=False,
         help_text="If true, user must pay to access tests under this subject"

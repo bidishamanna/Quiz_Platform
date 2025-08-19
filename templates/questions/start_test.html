@@ -12,9 +12,14 @@
 
 <!-- QUIZ Section (Hidden by default) -->
 <div id="quiz-area" class="d-none text-center p-4 rounded question-box bg-dark text-white" style="min-height: 300px;">
+    {% csrf_token %}
     <div id="timer" class="text-white mb-3"></div>
     <div id="question-box"></div>
     <div id="options-box" class="mb-3"></div>
     <button id="submit-btn" class="btn btn-primary">Submit Answer</button>
 </div>
 {% endblock %}
+
+
+
+

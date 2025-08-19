@@ -10,7 +10,7 @@ from subject.models import Subject
 
 from account.decorators import jwt_required, role_required  # adjust import if needed
 
-client = razorpay.Client(auth=(settings.RAZORPAY_KEY_ID, settings.RAZORPAY_KEY_SECRET))
+client = razorpay.Client(auth=(settings.RAZORPAY_KEY_ID, settings.RAZORPAY_KEY_SECRET))  #Creates a Razorpay client object
 
 # # ✅ STUDENT: Can view payment page
 # @role_required('staff', 'student')
@@ -39,28 +39,28 @@ def create_order(request):
     if subject.price == 0:
         return JsonResponse({"error": "This subject is free. No payment required."})
 
-    amount = int(subject.price * 100)  # Razorpay expects amount in paise
+    amount = int(subject.price * 100)  # Razorpay expects amount in paise 
 
-    order_data = {
+    order_data = {  # all three parameters in your order_data are built-in Razorpay API fields:
         "amount": amount,
         "currency": "INR",
-        "payment_capture": 1,
+        "payment_capture": 1,  #payment_capture is a parameter provided by Razorpay’s API itself,if 1 then When the student pays, Razorpay will instantly deduct the money and mark payment as successful.
     }
 
     try:
-        razorpay_order = client.order.create(data=order_data)
+        razorpay_order = client.order.create(data=order_data)  #Uses the client to create a new order in Razorpay.
 
         Payment.objects.create(
             user=request.user,
             subject=subject,
             amount=subject.price,
             status='PENDING',
-            transaction_id=razorpay_order['id']
+            transaction_id=razorpay_order['id'] 
         )
 
         return JsonResponse({
             'order_id': razorpay_order['id'],
-            'key': settings.RAZORPAY_KEY_ID,
+            'key': settings.RAZORPAY_KEY_ID, # like saller or organiger account key , where the payment is added to track it
             'amount': amount,
             'subject': subject.name
         })

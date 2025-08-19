@@ -117,37 +117,39 @@ $(document).ready(function () {
     });
 
     // 🔁 Delete Question
-        // 🔁 Delete Question (JWT version)
+        // 🔁 Delete Question (CSRF version)
     $(document).on("click", ".delete-question", function () {
         const questionId = $(this).data("id");
-        const token = localStorage.getItem("access_token"); // Your JWT token
+        const csrfToken = $("input[name=csrfmiddlewaretoken]").val(); // Get CSRF token
 
-        if (!confirm("Are you sure you want to delete this question?")) return;
+        if (!confirm("AJAX: Are you sure you want to delete this question?")) return;
 
         $.ajax({
             url: `/questions/delete/${questionId}/`,
-            type: "POST",
-            headers: {
-                "Authorization": "Bearer " + token
+            method: "POST",
+            data: {
+                csrfmiddlewaretoken: csrfToken
             },
             success: function (response) {
-                $("#acknowledge").text(response.message)
-                    .css("color", "green").fadeIn().delay(2000).fadeOut();
+                $("#acknowledge").text(response.message || "Question deleted successfully!")
+                    .css("color", "green")
+                    .fadeIn().delay(2000).fadeOut();
 
+                // Update question table dynamically
                 if ($("#question-table-body").length) {
                     $("#question-table-body").html(response.html);
                 } else if ($("#question-rows").length) {
                     $("#question-rows").html(response.html);
                 }
             },
-
             error: function (xhr) {
-                $("#acknowledge").text(xhr.responseJSON?.message || "Failed to delete.")
-                    .css("color", "red").fadeIn().delay(2000).fadeOut();
+                $("#acknowledge").text(xhr.responseJSON?.message || "Failed to delete the question.")
+                    .css("color", "red")
+                    .fadeIn().delay(2000).fadeOut();
             }
         });
-    });
 
+    })
 
     // 🔁 Edit Question - Fill form with data
     $(document).on("click", ".edit-question", function () {

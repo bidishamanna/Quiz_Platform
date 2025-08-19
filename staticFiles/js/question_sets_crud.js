@@ -1,15 +1,11 @@
-// static/js/category.js
 $(document).ready(function () {
     console.log("AJAX Script loaded");
 
-    
-    
-    
     // Handle Save/Edit Set
     $("#set_register_btn").click(function (event) {
         event.preventDefault();
 
-        const set_id = $("#set_id").val();
+        const set_id = $("#set_id").val(); // matches HTML
         const set_name = $("#set_name").val();
         const category_id = $("#category").val();
         const subject_id = $("#subject").val();
@@ -53,23 +49,19 @@ $(document).ready(function () {
         });
     });
 
+    // Delete Set
     $(document).on("click", ".delete-set", function () {
         const setId = $(this).data("id");
         const csrfToken = $("input[name=csrfmiddlewaretoken]").val();
-
-        console.log("🗑️ Delete clicked for ID:", setId);
 
         if (!confirm("Are you sure?")) return;
 
         $.ajax({
             url: `/question_sets/delete/${setId}/`,
             method: "POST",
-            data: {
-                csrfmiddlewaretoken: csrfToken
-            },
+            data: { csrfmiddlewaretoken: csrfToken },
             success: function (response) {
                 $("#acknowledge").text(response.message).css("color", "green").fadeIn().delay(2000).fadeOut();
-
                 $.get("/question_sets/get_rows/", function (data) {
                     $("#setList").html(data.html);
                 });
@@ -82,63 +74,52 @@ $(document).ready(function () {
 
     // Populate Subject dropdown when Category changes
     $("#category").change(function () {
-    const categoryId = $(this).val();
-    const token = localStorage.getItem("access_token"); // change if your storage key is different
+        const categoryId = $(this).val();
 
-    if (categoryId) {
-        $.ajax({
-            url: "/question_sets/get_subjects/",
-            method: "GET",
-            data: { category_id: categoryId },
-            headers: {
-                "Authorization": "Bearer " + token
-            },
-            success: function (response) {
-                let subjectSelect = $("#subject");
-                subjectSelect.empty();
-                subjectSelect.append('<option value="">-- Select Subject --</option>');
+        let subjectSelect = $("#subject");
+        subjectSelect.empty().append('<option value="">-- Select Subject --</option>');
 
-                response.subjects.forEach(subject => {
-                    subjectSelect.append(
-                        `<option value="${subject.id}">${subject.name}</option>`
-                    );
-                });
-            },
-            error: function (xhr) {
-                console.log("AJAX error:", xhr.status, xhr.responseText);
-            }
-        });
-    } else {
-        $("#subject").empty().append('<option value="">-- Select Subject --</option>');
-    }
+        if (categoryId) {
+            $.ajax({
+                url: "/question_sets/get_subjects/",
+                method: "GET",
+                data: { category_id: categoryId },
+                success: function (response) {
+                    response.subjects.forEach(subject => {
+                        subjectSelect.append(`<option value="${subject.id}">${subject.name}</option>`);
+                    });
+                },
+                error: function (xhr) {
+                    console.log("AJAX error:", xhr.status, xhr.responseText);
+                }
+            });
+        }
     });
 
-
+    // Edit Set
     $(document).on("click", ".edit-set", function () {
         const setId = $(this).data("id");
         const setName = $(this).data("name");
         const categoryId = $(this).data("category");
         const subjectId = $(this).data("subject");
 
-        $("#set_id").val(setId);
+        $("#set_id").val(setId); // corrected ID
         $("#set_name").val(setName);
         $("#category").val(categoryId);
         $("h3.text-primary").text("Edit Set");
         $("#set_register_btn").text("Update");
 
+        // Load subjects for selected category
         $.ajax({
             url: "/question_sets/get_subjects/",
             method: "GET",
             data: { category_id: categoryId },
             success: function (response) {
                 let subjectSelect = $("#subject");
-                subjectSelect.empty();
-                subjectSelect.append('<option value="">-- Select Subject --</option>');
+                subjectSelect.empty().append('<option value="">-- Select Subject --</option>');
 
                 response.subjects.forEach(subject => {
-                    subjectSelect.append(
-                        `<option value="${subject.id}" ${subject.id == subjectId ? 'selected' : ''}>${subject.name}</option>`
-                    );
+                    subjectSelect.append(`<option value="${subject.id}" ${subject.id == subjectId ? 'selected' : ''}>${subject.name}</option>`);
                 });
             },
             error: function (xhr) {
@@ -147,31 +128,15 @@ $(document).ready(function () {
         });
     });
 
-    //  function getCookie(name) {
-    //     let cookieValue = null;
-    //     if (document.cookie && document.cookie !== "") {
-    //         const cookies = document.cookie.split(";");
-    //         for (let i = 0; i < cookies.length; i++) {
-    //             const cookie = cookies[i].trim();
-    //             if (cookie.substring(0, name.length + 1) === name + "=") {
-    //                 cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-    //                 break;
-    //             }
-    //         }
-    //     }
-    //     return cookieValue;
-    // }
-
+    // Restore Set
     $(document).on("click", ".restore-set-btn", function () {
         const id = $(this).data("id");
-
-        // ✅ grab csrf token from hidden input rendered by {% csrf_token %}
-        const csrfToken = $("#csrf-form input[name=csrfmiddlewaretoken]").val();
+        const csrfToken = $("input[name=csrfmiddlewaretoken]").val();
 
         $.ajax({
             url: `/question_sets/restore/${id}/`,
             type: "POST",
-            headers: { "X-CSRFToken": csrfToken },  // set CSRF header
+            data: { csrfmiddlewaretoken: csrfToken },
             success: function (response) {
                 alert(response.message);
                 location.reload();
@@ -180,8 +145,6 @@ $(document).ready(function () {
                 alert(xhr.responseJSON?.message || "Failed to restore set.");
             }
         });
-    })
+    });
 
-})
-
-
+});

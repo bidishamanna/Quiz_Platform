@@ -27,7 +27,7 @@ urlpatterns = [
     path('get_subjects/<int:category_id>/', views.get_subjects_by_category, name='get_subjects_by_category'),
     path('get_sets/<int:subject_id>/', views.get_sets_by_subject, name='get_sets_by_subject'),
     path('list/', views.question_list, name='question_list'),
-    path('get_row/<int:question_id>/', views.get_question_row, name='get_question_row'),
+    path('get_row/<int:question_id>/', views.get_question_row, name='get_question_row'), # for table display 
     path('edit/<int:pk>/', views.edit_question, name='edit_question'),
     path('delete/<int:pk>/', views.delete_question, name='delete_question'),
      # ♻️ Recycle Bin for Questions (Page View)

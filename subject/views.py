@@ -193,7 +193,7 @@ from .models import Subject, Category
 @require_http_methods(["GET", "POST"])
 def add_subject(request):
     if request.method == "GET":
-        categories = Category.objects.filter(delflag=False)   #need for template dropdown
+        categories = Category.objects.filter(delflag=False)   # need for template dropdown
         subjects = Subject.objects.select_related("category").filter(delflag=False)   #table rendering
         return render(request, "subject/add_subject.html", {
             "categories": categories,
@@ -204,7 +204,7 @@ def add_subject(request):
     # POST logic
     category_id = request.POST.get("category")
     subject_name = request.POST.get("subject_name")
-    requires_payment = request.POST.get("requires_payment") == "true"
+    requires_payment = request.POST.get("requires_payment") == "true" 
 
 
     raw_price = request.POST.get("price")

@@ -89,41 +89,6 @@ $(document).ready(function () {
         });
     });
 
-//     function getCookie(name) {
-//         let cookieValue = null;
-//         if (document.cookie && document.cookie !== "") {
-//             const cookies = document.cookie.split(";");
-//             for (let i = 0; i < cookies.length; i++) {
-//                 const cookie = cookies[i].trim();
-//                 if (cookie.substring(0, name.length + 1) === name + "=") {
-//                     cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-//                     break;
-//                 }
-//             }
-//         }
-//         return cookieValue;
-//     }
-
-//     $(document).on("click", ".restore-btn", function () {
-//         const id = $(this).data("id");
-//         const csrfToken = getCookie("csrftoken");
-
-//         $.ajax({
-//             url: `/category/restore/${id}/`,
-//             type: "POST",
-//             beforeSend: function (xhr) {
-//                 xhr.setRequestHeader("X-CSRFToken", csrfToken);
-//             },
-//             success: function (response) {
-//                 alert(response.message);
-//                 location.reload();
-//             },
-//             error: function (xhr) {
-//                 alert(xhr.responseJSON?.message || "Failed to restore category.");
-//             }
-//         });
-//     });
-// })    
 
     $(document).on("click", ".restore-btn", function () {
     const id = $(this).data("id");

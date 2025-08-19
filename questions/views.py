@@ -187,7 +187,7 @@ def upload_questions(request):
         # ✅ Ownership check
         if set_obj.user != request.user:
             return JsonResponse({"message": "Only the creator of the set can upload questions."}, status=403)
-
+        
         # ✅ Detect file type (CSV or Excel)
         ext = uploaded_file.name.split(".")[-1].lower()
         if ext == "csv":
@@ -207,7 +207,8 @@ def upload_questions(request):
             option_b = row.get("option_b", "").strip()
             option_c = row.get("option_c", "").strip()
             option_d = row.get("option_d", "").strip()
-            correct_option = row.get("correct_option", "").strip().lower()
+            correct_option = row.get("correct_option", "").strip().upper()
+
 
             if not all([question_text, option_a, option_b, option_c, option_d, correct_option]):
                 continue  # Skip incomplete rows
@@ -300,14 +301,15 @@ def add_question(request):
     option_b = data.get("option_b", "").strip()
     option_c = data.get("option_c", "").strip()
     option_d = data.get("option_d", "").strip()
-    correct_option = data.get("correct_option", "").strip().lower()
+    correct_option = data.get("correct_option", "").strip().upper()
+
 
 
     if not all([question_text, category_id, subject_id, set_id, option_a, option_b, option_c, option_d, correct_option]):
         return JsonResponse({"message": "All fields are required."}, status=400)
     
     # ✅ Correct option validation
-    valid_options = ["a", "b", "c", "d"]
+    valid_options = ["A", "B", "C", "D"]
     if correct_option not in valid_options:
         return JsonResponse(
             {"correct_option": "Correct option must be A, B, C, or D."}, 
@@ -317,7 +319,7 @@ def add_question(request):
     try:
         category = get_object_or_404(Category, id=category_id, delflag=False)
         subject = get_object_or_404(Subject, id=subject_id, category=category, delflag=False)
-        set_obj = get_object_or_404(Set, id=set_id, subject=subject, category=category, delflag=False)
+        set_obj = get_object_or_404(Set, id=set_id, subject=subject, category=category, delflag=False) 
 
         if set_obj.user != request.user:
             return JsonResponse({"message": "Only the creator of the set can add questions."}, status=403)
@@ -371,6 +373,7 @@ def add_question(request):
 
     except Exception as e:
         return JsonResponse({"message": str(e)}, status=500)
+    
 
 # AJAX to get Subjects by Category
 @jwt_required
@@ -378,7 +381,6 @@ def add_question(request):
 def get_subjects_by_category(request, category_id):
     subjects = Subject.objects.filter(category_id=category_id, delflag=False).values("id", "name")
     return JsonResponse({"subjects": list(subjects)})
-
 
 
 @jwt_required
@@ -504,6 +506,7 @@ def question_list(request):
 
 #     except (Category.DoesNotExist, Subject.DoesNotExist, Set.DoesNotExist):
 #         return JsonResponse({"message": "Invalid category, subject, or set."}, status=400)
+
 @jwt_required
 @role_required('staff')
 @require_POST
@@ -522,10 +525,16 @@ def edit_question(request, pk):
     option_b = data.get("option_b", "").strip()
     option_c = data.get("option_c", "").strip()
     option_d = data.get("option_d", "").strip()
-    correct_option = data.get("correct_option", "").strip()
+    correct_option = data.get("correct_option", "").strip().upper()
 
     if not all([question_text, category_id, subject_id, set_id, option_a, option_b, option_c, option_d, correct_option]):
         return JsonResponse({"message": "All fields are required."}, status=400)
+    # ✅ Correct option validation
+    if correct_option not in ["A", "B", "C", "D"]:
+        return JsonResponse(
+            {"correct_option": "Correct option must be A, B, C, or D."},
+            status=400
+        )
 
     try:
         category = Category.objects.get(id=category_id, delflag=False)
@@ -590,6 +599,8 @@ def delete_question(request, pk):
     }, request=request)
 
     return JsonResponse({"message": "Question deleted successfully!", "html": html})
+
+
 
 
 @login_required
@@ -915,8 +926,16 @@ def get_question(request):
     answered_qs = UserAnswer.objects.filter(attempt=attempt).values_list('question_id', flat=True)
     print("Answered questions:", list(answered_qs))
 
-    next_q = Question.objects.filter(set_id=set_id, delflag=False).exclude(id__in=answered_qs).order_by("?").first()
+ # UserAnswer.objects.filter(attempt=attempt) → Fetches all answers submitted by this user for this attempt.
+# .values_list('question_id', flat=True) → Returns a flat list of question IDs instead of full objects.
+# Example: [1, 3, 5]# answered_qs → Variable storing IDs of questions the student has already answered.
 
+    next_q = Question.objects.filter(set_id=set_id, delflag=False).exclude(id__in=answered_qs).order_by("?").first()
+    
+# Question.objects.filter(set_id=set_id, delflag=False)# Filters questions belonging to this set (set_id).# delflag=False ensures soft-deleted questions are ignored.
+# .exclude(id__in=answered_qs)# Excludes questions already answered by the student.# .order_by("?")# Randomizes the question order.
+# Ensures students get questions in a random sequence.# .first() → Returns the first question from the filtered queryset, or None if no questions left.
+# next_q → Holds the next question object.
 
     if not next_q:
         print("All questions completed.")
@@ -948,7 +967,7 @@ def submit_answer(request):
     selected_option = request.POST.get('selected_option')
     attempt_id = request.POST.get('attempt_id')
 
-    selected_option = request.POST.get('selected_option', '').strip()
+    selected_option = request.POST.get('selected_option', '').strip().upper()
     if not question_id or not attempt_id:
         return JsonResponse({'error': 'Missing data'}, status=400)
 
