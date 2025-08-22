@@ -54,7 +54,7 @@
                     {% if subject.requires_payment %}
                       {% if user.is_authenticated and subject.id in paid_subjects %}
                         <form method="get" action="{% url 'start_test' %}" onsubmit="return storeSubjectId({{ subject.id }})">
-                          <button type="submit" class="btn btn-sm btn-success">Start</button>
+                          <button type="submit" class="btn btn-sm btn-success">Start</button> 
                         </form>
                       {% else %}
                         {% if user.is_authenticated %}

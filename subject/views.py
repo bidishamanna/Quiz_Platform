@@ -32,6 +32,12 @@ def restore_subject(request, pk):
 
     subject.delflag = False
     subject.save()
+    # # ✅ Restore all related sets
+    # sets = Set.objects.filter(subject=subject, delflag=True)
+    # sets.update(delflag=False)
+
+    # # ✅ Restore all questions linked to those sets
+    # Question.objects.filter(set__in=sets, delflag=True).update(delflag=False)
 
     return JsonResponse({"message": "Subject restored successfully."})
 
@@ -187,7 +193,7 @@ from django.views.decorators.http import require_http_methods
 from django.shortcuts import render
 from .models import Subject, Category
 # from .decorators import jwt_required, role_required
-
+import re
 @jwt_required
 @role_required('staff')
 @require_http_methods(["GET", "POST"])
@@ -216,6 +222,13 @@ def add_subject(request):
     # If not paid, price should always be 0.00
     if not requires_payment:
         price = Decimal("0.00")
+
+    # ✅ Regex validation: only A–Z allowed, underscore optional (between words)
+    if subject_name and not re.fullmatch(r"[A-Z]+(_[A-Z]+)*", subject_name):
+        return JsonResponse({
+        "message": "Subject name must contain only capital letters (A–Z), with optional underscores (_)."
+    }, status=400)
+
 
     if subject_name and category_id:
         try:
@@ -295,6 +308,11 @@ def edit_subject(request, pk):
 
     if not requires_payment:
         price = Decimal("0.00")
+    # ✅ Regex validation for Subject name (only capital letters + optional underscores)
+    if subject_name and not re.fullmatch(r"[A-Z]+(_[A-Z]+)*", subject_name):
+        return JsonResponse({
+            "message": "Subject name must contain only capital letters (A–Z), with optional underscores (_)."
+        }, status=400)    
 
     if subject_name and category_id:
         try:
@@ -340,6 +358,12 @@ def delete_subject(request, pk):
 
     subject.delflag = True
     subject.save()
+    #  # ✅ Soft delete all related Sets
+    # sets = Set.objects.filter(subject=subject, delflag=False)
+    # sets.update(delflag=True)
+
+    # # ✅ Soft delete all related Questions under those Sets
+    # Question.objects.filter(set__in=sets, delflag=False).update(delflag=True)
 
     subjects = Subject.objects.select_related("category").filter(delflag=False)
     subject_data = [

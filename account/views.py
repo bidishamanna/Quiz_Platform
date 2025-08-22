@@ -28,6 +28,7 @@ from account.models import User, UserToken
 from account.decorators import jwt_required,role_required
 from django.urls import reverse
 # Create your views here.
+
 def activate(request,uidb64,token):
     try:
         uid = urlsafe_base64_decode(uidb64).decode() 
@@ -404,9 +405,11 @@ from .models import User
 
 NAME_REGEX = r'^[A-Za-z]{2,30}$'
 USERNAME_REGEX = r'^[A-Za-z0-9_]{4,20}$'
-EMAIL_REGEX = r'^[\w\.-]+@[\w\.-]+\.\w+$'
+EMAIL_REGEX = r'^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$'
+
 PASSWORD_REGEX = r'^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$'
-DOB_REGEX = r'^\d{4}-\d{2}-\d{2}$'
+DOB_REGEX = r'^(19|20)\d{2}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])$'
+
 GENDER_OPTIONS = ['Male', 'Female', 'Other']
 
 def registration(request):
@@ -438,6 +441,7 @@ def registration(request):
             errors['username'] = "4–20 characters: letters, numbers, underscores."
         elif User.objects.filter(username__iexact=username).exists():
             errors['username'] = "Username already exists."
+
         if not email or not re.match(EMAIL_REGEX, email):
             errors['email'] = "Invalid email address."
         elif User.objects.filter(email__iexact=email).exists():
@@ -591,6 +595,8 @@ from django.http import JsonResponse
 #             return redirect("start_test", category_id=selected_category_id)
 
 #     return render(request, "account/student_dashboard.html", {"categories": categories})
+
+
 @jwt_required
 @role_required('student')  # directly using 'student' as string
 def student_dashboard(request):
@@ -718,7 +724,6 @@ def forget_password(request):
     return render(request,'account/email/forget_password.html')
 
 
-
 PASSWORD_REGEX = r'^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$'
 
 from urllib.parse import unquote
@@ -751,5 +756,6 @@ def newpassword(request, email):
             context['message'] = "Password has been reset successfully."
 
     return render(request, 'account/email/reset_password.html', context)
+
 
 

@@ -109,7 +109,7 @@ $(document).ready(function () {
         $("h3.text-primary").text("Edit Set");
         $("#set_register_btn").text("Update");
 
-        // Load subjects for selected category
+        // Load subjects for selected category 
         $.ajax({
             url: "/question_sets/get_subjects/",
             method: "GET",

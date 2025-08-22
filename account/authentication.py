@@ -37,11 +37,11 @@
 #                   # return (user, None)
 
 # # JWT token has three parts (Header.Payload.Signature).
+
 import jwt
 from datetime import datetime, timedelta, timezone
 from account.models import User
 import os
-
 
 def create_access_token(user: User):
     payload = {

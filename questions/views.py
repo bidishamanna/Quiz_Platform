@@ -195,8 +195,8 @@ def upload_questions(request):
             reader = csv.DictReader(decoded_file)
             rows = list(reader)
         elif ext in ["xls", "xlsx"]:
-            df = pd.read_excel(uploaded_file)
-            rows = df.to_dict(orient="records")
+            df = pd.read_excel(uploaded_file)  #converts the DataFrame into a list of dictionaries,
+            rows = df.to_dict(orient="records")  #converts the DataFrame into a list of dictionaries,
         else:
             return JsonResponse({"message": "Unsupported file format. Use CSV or Excel."}, status=400)
 
@@ -842,6 +842,7 @@ def start_test_page(request):
 #         'set_id': random_set.id,
 #         'attempt_id': attempt.id  # include this in the response
 #     })
+
 @jwt_required
 @role_required('student')
 @require_GET
@@ -868,6 +869,7 @@ def assign_random_set(request):
     })
 
 
+
 # # ---------- 3. Get Next Question ----------
 # @jwt_required
 # @role_required('student')
@@ -891,6 +893,7 @@ def assign_random_set(request):
 #         'C': next_q.option_c,
 #         'D': next_q.option_d,
 #     }
+
 def upload_questions_view(request):
     context = {
         'categories': Category.objects.all(),
@@ -920,6 +923,7 @@ def get_question(request):
 
     try:
         attempt = Attempt.objects.get(id=attempt_id, user=user)
+
     except Attempt.DoesNotExist:
         return JsonResponse({'status': 'fail', 'message': 'Invalid attempt.'})
 
@@ -927,7 +931,7 @@ def get_question(request):
     print("Answered questions:", list(answered_qs))
 
  # UserAnswer.objects.filter(attempt=attempt) → Fetches all answers submitted by this user for this attempt.
-# .values_list('question_id', flat=True) → Returns a flat list of question IDs instead of full objects.
+# .values_list('question_id', flat=True) → Returns a flat list of question IDs instead of full objects. 
 # Example: [1, 3, 5]# answered_qs → Variable storing IDs of questions the student has already answered.
 
     next_q = Question.objects.filter(set_id=set_id, delflag=False).exclude(id__in=answered_qs).order_by("?").first()
@@ -994,7 +998,6 @@ def submit_answer(request):
             "message": "Answer submitted",
             "correct_option": question.correct_option,
             'question': question.question_text,  # ✅ CORRECT
-
             "is_correct": is_correct
         }, status=201)
 

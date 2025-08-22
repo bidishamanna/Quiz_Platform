@@ -21,3 +21,4 @@ class Set(models.Model): # models — it's a module. # Model -- is a class insid
     def __str__(self):
         return self.name
 
+

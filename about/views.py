@@ -44,13 +44,14 @@ def home(request):
 
 
     for category in categories:
+
         subjects = category.subjects.filter(delflag=False)  #related_name="subjects", Django automatically creates an attribute .subjects on each Category object.
                                                          #category.subjects = all subjects that belong to that category.
         category_subject_map[category] = subjects     
 
     return render(request, 'about/home.html', {
         'category_subject_map': category_subject_map,
-        'paid_subjects': paid_subjects,
+        'paid_subjects': paid_subjects, 
     })
 
 # from django.contrib.auth.decorators import login_required

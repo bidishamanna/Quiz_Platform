@@ -34,6 +34,9 @@ def restore_set(request, pk):
 
     s.delflag = False
     s.save()
+    # ✅ Restore related questions
+    Question.objects.filter(set=s, delflag=True).update(delflag=False)
+    
     return JsonResponse({"message": "Set restored successfully."})
 
 @login_required
@@ -61,16 +64,19 @@ def get_subjects(request):
 
     try:
         Category.objects.get(id=category_id, delflag=False)
-        subjects = Subject.objects.filter(category_id=category_id, delflag=False).values("id", "name")
+        subjects = Subject.objects.filter(category_id=category_id, delflag=False).values("id", "name").distinct()
         return JsonResponse({"subjects": list(subjects)})
     except Category.DoesNotExist:
         return JsonResponse({"message": "Invalid category ID."}, status=400)
+
+
     
 from django.views.decorators.http import require_http_methods
 from django.db import IntegrityError
 from django.http import JsonResponse
 from django.shortcuts import render
 from django.template.loader import render_to_string
+import re
 
 @jwt_required
 @role_required('staff')
@@ -93,6 +99,9 @@ def add_set(request):
     subject_id = request.POST.get("subject")
 
     if set_name and category_id and subject_id:
+         # Regex: SET_ followed by one or more digits
+        if not re.fullmatch(r"SET_\d+", set_name):
+            return JsonResponse({"message": "Format should be like SET_1, SET_2, ..."}, status=400)
         try:
             category = Category.objects.get(id=category_id, delflag=False)
             subject = Subject.objects.get(id=subject_id, category=category, delflag=False)
@@ -128,6 +137,7 @@ def add_set(request):
 
             # Fetch and render updated set rows
             sets = Set.objects.select_related("category", "subject", "user").filter(delflag=False)
+            
             html = render_to_string("partials/set_rows.html", {
                 "sets": sets,
                 "user_role": request.user.role,
@@ -179,6 +189,9 @@ def edit_set(request, pk):
     subject_id = request.POST.get("subject")
 
     if set_name and category_id and subject_id:
+         # Regex validation for SET_<number> format
+        if not re.fullmatch(r"SET_\d+", set_name):
+            return JsonResponse({"message": "Format should be like SET_1, SET_2, ..."}, status=400)
         try:
             category = Category.objects.get(id=category_id, delflag=False)
             subject = Subject.objects.get(id=subject_id, category=category, delflag=False)
@@ -208,6 +221,7 @@ def edit_set(request, pk):
 
     return JsonResponse({"message": "All fields are required."}, status=400)
 
+from questions.models import Question
 
 @jwt_required
 @role_required('staff')
@@ -220,6 +234,8 @@ def delete_set(request, pk):
 
     set_obj.delflag = True
     set_obj.save()
+    # ✅ Also soft delete all related questions
+    Question.objects.filter(set=set_obj, delflag=False).update(delflag=True)  # that set id related all question mark as delflag = true
 
     return JsonResponse({
         "message": "Set deleted successfully."

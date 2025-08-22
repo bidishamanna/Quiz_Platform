@@ -84,7 +84,9 @@ function validateRegistrationForm() {
 
     const nameRegex = /^[A-Za-z]{2,30}$/;
     const usernameRegex = /^[A-Za-z0-9_]{4,20}$/;
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    // const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const emailRegex = /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/;
+
     const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&]).{8,}$/;
 
     const today = new Date();
@@ -112,7 +114,7 @@ function validateRegistrationForm() {
         $("#username_error").html("Username is required.");
         isValid = false;
     } else if (!usernameRegex.test(username)) {
-        $("#username_error").html("Use 4–20 characters: letters, numbers, underscores.");
+        $("#username_error").html("start with character , only 4–20 characters: letters, numbers and underscores is allowed ");
         isValid = false;
     }
 
@@ -130,7 +132,7 @@ function validateRegistrationForm() {
         $("#password_error").html("Password is required.");
         isValid = false;
     } else if (!passwordRegex.test(password)) {
-        $("#password_error").html("Password must be 8+ chars with uppercase, lowercase, number, and special char.");
+        $("#password_error").html("Password must be 8+ chars with uppercase, lowercase, number, and at least one special char.");
         isValid = false;
     }
 
@@ -173,7 +175,7 @@ function validateRegistrationForm() {
     return isValid;
 }
 
-// Email uniqueness check
+// // Email uniqueness check
 function validateEmailUniqueness(email, callback) {
     if (!email) return callback(false);
     $.ajax({
@@ -203,7 +205,7 @@ $(document).ready(function () {
 
     $("#signup_btn").prop("disabled", true);
 
-    // Validate on input/change/blur
+    // // Validate on input/change/blur
     $("input, select").on("input change blur", function () {
         validateRegistrationForm();
     });
@@ -308,7 +310,7 @@ $(document).ready(function () {
         });
     });
 
-});    
+});
 
 
 

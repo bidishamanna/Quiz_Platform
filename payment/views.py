@@ -44,11 +44,11 @@ def create_order(request):
     order_data = {  # all three parameters in your order_data are built-in Razorpay API fields:
         "amount": amount,
         "currency": "INR",
-        "payment_capture": 1,  #payment_capture is a parameter provided by Razorpay’s API itself,if 1 then When the student pays, Razorpay will instantly deduct the money and mark payment as successful.
+        "payment_capture": 1, #payment_capture is a parameter provided by Razorpay’s API itself,if 1 then When the student pays, Razorpay will instantly deduct the money and mark payment as successful.
     }
 
     try:
-        razorpay_order = client.order.create(data=order_data)  #Uses the client to create a new order in Razorpay.
+        razorpay_order = client.order.create(data=order_data) # this is create an order id  #Uses the client to create a new order in Razorpay.
 
         Payment.objects.create(
             user=request.user,
@@ -59,7 +59,7 @@ def create_order(request):
         )
 
         return JsonResponse({
-            'order_id': razorpay_order['id'],
+            'order_id': razorpay_order['id'], 
             'key': settings.RAZORPAY_KEY_ID, # like saller or organiger account key , where the payment is added to track it
             'amount': amount,
             'subject': subject.name
@@ -89,7 +89,7 @@ def verify_payment(request):
         })
 
         payment = Payment.objects.get(transaction_id=razorpay_order_id)
-        payment.razorpay_payment_id = razorpay_payment_id
+        payment.razorpay_payment_id = razorpay_payment_id 
         payment.status = 'SUCCESS'
         payment.save()
 

@@ -8,13 +8,16 @@ from django.template.loader import render_to_string
 from account.decorators import role_required,jwt_required
 from django.views.decorators.http import require_POST
 from django.views.decorators.http import require_http_methods
+from subject.models import Subject
+from question_sets.models import Set
+from questions.models import Question
 # # Create your views here.
-
+import re
 @login_required
 @role_required('staff')
 def recycle_bin(request):
     # 🔄 Show all deleted categories (not just ones owned by current user)
-    deleted_categories = Category.objects.filter(delflag=True).select_related("user")
+    deleted_categories = Category.objects.filter(delflag=True).select_related("user") 
 
     return render(request, "category/recycle_bin.html", {
         "deleted_categories": deleted_categories,
@@ -43,6 +46,7 @@ from django.views.decorators.http import require_POST
 
 
 # ///////////  who restore the category ownership will assign to that staff///////
+
 @jwt_required
 @role_required('staff')  # Ensures only staff can restore categories
 @require_POST
@@ -54,6 +58,25 @@ def restore_category(request, pk):
     category.delflag = False
     category.user = request.user
     category.save()
+    # ✅ Restore all related subjects
+      # ✅ Restore all related subjects under this category
+    Subject.objects.filter(category=category, delflag=True).update(
+        delflag=False,
+        user=request.user
+    )
+
+    # ✅ Restore all related sets under those subjects
+    Set.objects.filter(subject__category=category, delflag=True).update(
+        delflag=False,
+        user=request.user
+    )
+
+    # ✅ Restore all related questions under those sets
+    Question.objects.filter(set__subject__category=category, delflag=True).update(
+        delflag=False,
+        user=request.user
+    )
+
 
     return JsonResponse({
         "message": "Category restored successfully "
@@ -79,7 +102,7 @@ def get_category_rows(request):
     return JsonResponse({"html": html})
 
 
-@jwt_required
+@jwt_required 
 @role_required('staff')
 @require_http_methods(["GET", "POST"])
 def add_category(request):
@@ -88,7 +111,13 @@ def add_category(request):
 
         if not category_name:
             return JsonResponse({"message": "Category name cannot be empty!"}, status=400)
-
+        
+         # ✅ Regex check: only uppercase letters allowed (A–Z), at least 1 char
+        if not re.fullmatch(r"[A-Z]+", category_name):
+            return JsonResponse(
+                {"message": "Category name must contain only capital letters (A–Z)."}, 
+                status=400
+            )
         # Case-insensitive check among active categories
         if Category.objects.filter(name__iexact=category_name, delflag=False).exists():
             return JsonResponse({"message": "Category with this name already exists."}, status=400)
@@ -116,6 +145,7 @@ def add_category(request):
 
 @jwt_required
 @role_required('staff')
+
 def edit_category(request, pk):
     category = get_object_or_404(Category, pk=pk)
 
@@ -127,16 +157,22 @@ def edit_category(request, pk):
 
         if not new_name:
             return JsonResponse({"message": "Category name cannot be empty!"}, status=400)
-
+        
+        if not re.fullmatch(r"[A-Z]+", new_name):
+            return JsonResponse(
+                {"message": "Category name must contain only capital letters (A–Z)."},
+                status=400
+            )
         if category.name.lower() == new_name.lower():
             return JsonResponse({"message": "No changes detected."}, status=200)
 
-        # Check for existing active category with same name
+        # Check for existing active category with same name 
+
         if Category.objects.filter(name__iexact=new_name, delflag=False).exclude(id=pk).exists():  # skip its own id and search all except own id
             return JsonResponse({"message": "Another active category with this name already exists."}, status=400)
 
         # Reactivate a previously deleted category
-        deleted = Category.objects.filter(name__iexact=new_name, delflag=True).first()
+        deleted = Category.objects.filter(name__iexact=new_name, delflag=True).first() 
         if deleted:
             deleted.delflag = False
             deleted.user = request.user  # reassign ownership
@@ -165,9 +201,9 @@ def edit_category(request, pk):
         })
 
 
-@jwt_required
+@jwt_required 
 @role_required('staff')
-@require_POST
+@require_POST 
 def delete_category(request, pk):
     category = get_object_or_404(Category, pk=pk)
 
@@ -177,6 +213,15 @@ def delete_category(request, pk):
 
     category.delflag = True
     category.save()
+    # ✅ Soft delete all related subjects
+        # ✅ Soft delete all subjects under the category
+    Subject.objects.filter(category=category, delflag=False).update(delflag=True)
+
+    # ✅ Soft delete all sets under those subjects
+    Set.objects.filter(subject__category=category, delflag=False).update(delflag=True)
+
+    # ✅ Soft delete all questions under those sets
+    Question.objects.filter(set__subject__category=category, delflag=False).update(delflag=True) #lookups across relationships
 
     # 🔁 Return updated category rows with current user context
     categories = Category.objects.filter(delflag=False)
